@@ -1,0 +1,14 @@
+#root {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.left-area {
+  width: 40%;
+  background-color: blueviolet;
+}
+
+.right-area {
+  width: 60%;
+  background-color: brown;
+}
