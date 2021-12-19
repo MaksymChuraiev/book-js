@@ -39,6 +39,8 @@ const books = [
   },
 ];
 
+localStorage.setItem('books', JSON.stringify(books));
+
 const mainRoot = document.querySelector('#root');
 const leftDiv = document.createElement('div');
 const rightDiv = document.createElement('div');
@@ -57,7 +59,7 @@ leftDiv.append(h2, ul, addButton);
 const insertUl = document.querySelector('ul');
 
 const renderMarkUp = () => {
-  const bookMarkUp = books
+  const bookMarkUp = JSON.parse(localStorage.getItem('books'))
     .map(
       ({ title, id }) =>
         `<li id='${id}'><p class='bookTitle'>${title}</p><button class='edit-element'>Edit</button><button class='delete-element'>Delete</button></li>`
@@ -82,16 +84,17 @@ const renderMarkUp = () => {
 };
 
 const renderPreview = (event) => {
-  const bookInf = event.currentTarget.textContent;
-  const { title, author, img, plot } = books.find(
-    (book) => book.title === bookInf
-  );
+  const bookInf = event.target.textContent;
+  const { title, author, img, plot } = JSON.parse(
+    localStorage.getItem('books')
+  ).find((book) => book.title === bookInf);
 
   const bookToFind = () => {
     rightDiv.innerHTML = '';
     const bookMarkUp = `<h2>${title}</h2><p>${author}</p><img src = '${img}'><p>${plot}</p><button>Save</button>`;
     rightDiv.insertAdjacentHTML('beforeend', bookMarkUp);
   };
+  console.log(img);
 
   bookToFind();
 };
@@ -102,15 +105,87 @@ const editBook = () => {
 
 const deleteBook = (event) => {
   const bookToDelete = event.currentTarget.parentNode;
-  const bookFind = books.find((element) => element.id === bookToDelete.id);
+  const localData = JSON.parse(localStorage.getItem('books'));
+  const bookFind = localData.find((element) => element.id === bookToDelete.id);
 
   if (rightDiv.children[0].textContent === bookFind.title) {
     rightDiv.innerHTML = '';
   }
 
-  // arrayOfLi.filter((element) => element !== event.currentTarget.id);
+  const newData = localData.filter((book) => book.id !== bookToDelete.id);
+  localStorage.setItem('books', JSON.stringify(newData));
+  ul.innerHTML = '';
+
+  renderMarkUp(newData);
 };
 
 renderMarkUp();
 
-console.log(mainRoot);
+addButton.addEventListener('click', onAddClick);
+
+function onAddClick() {
+  rightDiv.innerHTML = '';
+
+  const newBook = {
+    id: `${Date.now()}`,
+    title: '',
+    author: '',
+    img: '',
+    plot: '',
+  };
+
+  rightDiv.insertAdjacentHTML('beforeend', createFormMarkup());
+
+  formFunctional(newBook);
+
+  const btnSave = document.querySelector('.save-btn');
+  const input = document.querySelectorAll('input');
+  btnSave.addEventListener('click', onBtnSaveClick);
+  console.log(btnSave);
+
+  let formData = {};
+
+  function onBtnSaveClick(e) {
+    e.preventDefault();
+
+    input.forEach((el) => {
+      if (el.value === '') {
+        alert('please');
+      }
+    });
+    localStorage.setItem('formData', JSON.stringify(newBook));
+  }
+}
+
+function createFormMarkup() {
+  return `<form>
+      <label>
+        введите название книга
+        <input name="title" />
+      </label>
+      <label>
+       введите автор
+        <input name="author" />
+      </label>
+      <label>
+       введите ссылка на картинку
+        <input name="img" />
+      </label>
+      <label>
+        введите описание
+        <input name="plot" />
+      </label>
+      <button class='save-btn' type="submit">save</button>
+    </form>`;
+}
+
+function formFunctional(book) {
+  const input = document.querySelectorAll('input');
+
+  input.forEach((el) => el.addEventListener('change', onInputChange));
+
+  function onInputChange(e) {
+    book[e.target.name] = e.target.value;
+    console.log(book);
+  }
+}
