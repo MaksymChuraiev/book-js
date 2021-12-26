@@ -38,8 +38,9 @@ const books = [
     какими инструментами ему нужно пользоваться.`,
   },
 ];
-
-localStorage.setItem('books', JSON.stringify(books));
+if (!localStorage.getItem('books')) {
+  localStorage.setItem('books', JSON.stringify(books));
+}
 
 const mainRoot = document.querySelector('#root');
 const leftDiv = document.createElement('div');
@@ -57,6 +58,10 @@ addButton.textContent = 'add';
 leftDiv.append(h2, ul, addButton);
 
 const insertUl = document.querySelector('ul');
+
+// if (localStorage.getItem('object')) {
+//   createBookMarkup(JSON.parse(localStorage.getItem('object')));
+// }
 
 const renderMarkUp = () => {
   const bookMarkUp = JSON.parse(localStorage.getItem('books'))
@@ -91,32 +96,82 @@ const renderPreview = (event) => {
 
   const bookToFind = () => {
     rightDiv.innerHTML = '';
-    const bookMarkUp = `<h2>${title}</h2><p>${author}</p><img src = '${img}'><p>${plot}</p><button>Save</button>`;
+    const bookMarkUp = `<h2>${title}</h2><p>${author}</p><img src = '${img}'><p>${plot}</p>`;
     rightDiv.insertAdjacentHTML('beforeend', bookMarkUp);
   };
-  console.log(img);
+  // console.log(img);
 
   bookToFind();
 };
 
-const editBook = () => {
+function createBookMarkup(object) {
+  rightDiv.innerHTML = '';
+  const { title, author, img, plot } = object;
+  localStorage.setItem('object', JSON.stringify(object));
+  rightDiv.insertAdjacentHTML(
+    'beforeend',
+    `<h2>${title}</h2><p>${author}</p><img src = '${img}'><p>${plot}</p>`
+  );
+}
+
+const editBook = (event) => {
+  const bookToEdit = event.currentTarget.parentNode;
   console.log('edit');
+  rightDiv.innerHTML = '';
+
+  const localStorageData = JSON.parse(localStorage.getItem('books'));
+  const editBook = localStorageData.find((element) => {
+    if (element.id === bookToEdit.id) {
+      return element;
+    }
+  });
+  console.log(bookToEdit);
+  console.log(editBook);
+
+  rightDiv.insertAdjacentHTML('beforeend', createFormMarkup(editBook));
+
+  formFunctional(editBook);
+
+  const btnEditSave = document.querySelector('.save-btn');
+  btnEditSave.addEventListener('click', onBtnEditSaveClick);
+
+  function onBtnEditSaveClick(e) {
+    e.preventDefault();
+
+    localStorage.setItem('books', JSON.stringify(localStorageData));
+    insertUl.innerHTML = '';
+    renderMarkUp();
+    createBookMarkup(editBook);
+    setTimeout(() => alert('books saccesfull'), 300);
+  }
 };
 
 const deleteBook = (event) => {
   const bookToDelete = event.currentTarget.parentNode;
   const localData = JSON.parse(localStorage.getItem('books'));
-  const bookFind = localData.find((element) => element.id === bookToDelete.id);
+  const bookFind = localData.find((element) => {
+    if (element.id === bookToDelete.id) {
+      return element;
+    }
+  });
+
+  const newData = localData.filter((book) => {
+    if (book.id !== bookToDelete.id) {
+      return book;
+    }
+  });
+  localStorage.setItem('books', JSON.stringify(newData));
+  insertUl.innerHTML = '';
+
+  renderMarkUp(newData);
+
+  if (rightDiv.children[0] === undefined) {
+    return;
+  }
 
   if (rightDiv.children[0].textContent === bookFind.title) {
     rightDiv.innerHTML = '';
   }
-
-  const newData = localData.filter((book) => book.id !== bookToDelete.id);
-  localStorage.setItem('books', JSON.stringify(newData));
-  ul.innerHTML = '';
-
-  renderMarkUp(newData);
 };
 
 renderMarkUp();
@@ -124,8 +179,6 @@ renderMarkUp();
 addButton.addEventListener('click', onAddClick);
 
 function onAddClick() {
-  rightDiv.innerHTML = '';
-
   const newBook = {
     id: `${Date.now()}`,
     title: '',
@@ -134,14 +187,15 @@ function onAddClick() {
     plot: '',
   };
 
-  rightDiv.insertAdjacentHTML('beforeend', createFormMarkup());
+  rightDiv.innerHTML = '';
+
+  rightDiv.insertAdjacentHTML('beforeend', createFormMarkup(newBook));
 
   formFunctional(newBook);
 
   const btnSave = document.querySelector('.save-btn');
   const input = document.querySelectorAll('input');
   btnSave.addEventListener('click', onBtnSaveClick);
-  console.log(btnSave);
 
   let formData = {};
 
@@ -151,35 +205,56 @@ function onAddClick() {
     input.forEach((el) => {
       if (el.value === '') {
         alert('please');
+        return;
       }
     });
-    localStorage.setItem('formData', JSON.stringify(newBook));
+
+    if (newBook.title && newBook.author && newBook.img && newBook.plot) {
+      const localStorageData = JSON.parse(localStorage.getItem('books'));
+      const newLS = [...localStorageData, newBook];
+
+      localStorage.setItem('books', JSON.stringify(newLS));
+      // console.log(localStorageData);
+      // console.log(newBook);
+      insertUl.innerHTML = '';
+
+      renderMarkUp();
+      createBookMarkup(newBook);
+      setTimeout(() => alert('book succesfully added'), 300);
+    }
   }
 }
 
-function createFormMarkup() {
+function createFormMarkup(book) {
+  // if (localStorage.removeItem('object')) {
+  //   localStorage.removeItem('object')
+  // }
+
   return `<form>
       <label>
         введите название книга
-        <input name="title" />
+        <input name="title" type = 'text' value ="${book.title}"/>
       </label>
       <label>
        введите автор
-        <input name="author" />
+        <input name="author" type = 'text' value ='${book.author}'/>
       </label>
       <label>
        введите ссылка на картинку
-        <input name="img" />
+        <input name="img" type = 'text' value ='${book.img}'/>
       </label>
       <label>
         введите описание
-        <input name="plot" />
+        <input name="plot" type = 'text' value ='${book.plot}'/>
       </label>
       <button class='save-btn' type="submit">save</button>
     </form>`;
 }
 
 function formFunctional(book) {
+  // if (book === null) {
+  //   return;
+  // }
   const input = document.querySelectorAll('input');
 
   input.forEach((el) => el.addEventListener('change', onInputChange));
