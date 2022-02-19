@@ -50,11 +50,14 @@ mainRoot.append(leftDiv, rightDiv);
 
 rightDiv.classList.add('right-area');
 leftDiv.classList.add('left-area');
+
 const h2 = document.createElement('h2');
-h2.textContent = 'Заголовок';
+h2.textContent = 'All books';
+h2.classList.add('form-title');
 const ul = document.createElement('ul');
 const addButton = document.createElement('button');
-addButton.textContent = 'add';
+addButton.classList.add('addButton');
+addButton.textContent = 'Add';
 leftDiv.append(h2, ul, addButton);
 
 const insertUl = document.querySelector('ul');
@@ -67,7 +70,7 @@ const renderMarkUp = () => {
   const bookMarkUp = JSON.parse(localStorage.getItem('books'))
     .map(
       ({ title, id }) =>
-        `<li id='${id}'><p class='bookTitle'>${title}</p><button class='edit-element'>Edit</button><button class='delete-element'>Delete</button></li>`
+        `<li class='bookList' id='${id}'><p class='bookTitle'>${title}</p><button class='edit-element'>Edit</button><button class='delete-element'>Delete</button></li>`
     )
     .join('');
 
@@ -96,8 +99,10 @@ const renderPreview = (event) => {
 
   const bookToFind = () => {
     rightDiv.innerHTML = '';
-    const bookMarkUp = `<h2>${title}</h2><p>${author}</p><img src = '${img}'><p>${plot}</p>`;
+    const bookMarkUp = `<div class='right-div_book-info'><h2 class="form-title">${title}</h2><p class='bookTitle'>${author}</p><img src = '${img}'><p class='bookAbout'>${plot}</p><button class='close-element'>Close</button></div>`;
     rightDiv.insertAdjacentHTML('beforeend', bookMarkUp);
+    const closeBtn = document.querySelector('.close-element');
+    closeBtn.addEventListener('click', clearInfo);
   };
   // console.log(img);
 
@@ -230,25 +235,27 @@ function createFormMarkup(book) {
   //   localStorage.removeItem('object')
   // }
 
-  return `<form>
-      <label>
-        введите название книга
-        <input name="title" type = 'text' value ="${book.title}"/>
+  return `
+  <div class="container"
+  <div class="form">      
+      <form class="form-wrap">
+      <h2 class="form-title">Login Form</h2>
+      <label class="input-box">      
+        <input name="title" placeholder="Название книги" type = 'text' value ="${book.title}"/>
       </label>
-      <label>
-       введите автор
-        <input name="author" type = 'text' value ='${book.author}'/>
+      <label class="input-box">       
+        <input name="author" placeholder="Имя автора" type = 'text' value ='${book.author}'/>
       </label>
-      <label>
-       введите ссылка на картинку
-        <input name="img" type = 'text' value ='${book.img}'/>
+      <label class="input-box">      
+        <input name="img" placeholder="Ссылка" type = 'text' value ='${book.img}'/>
       </label>
-      <label>
-        введите описание
-        <input name="plot" type = 'text' value ='${book.plot}'/>
+      <label class="input-box">      
+        <input name="plot" placeholder="Описание" type = 'text' value ='${book.plot}'/>
       </label>
-      <button class='save-btn' type="submit">save</button>
-    </form>`;
+      <button class='save-btn' type="submit">Save</button>
+    </form>
+    </div>
+    </div>`;
 }
 
 function formFunctional(book) {
@@ -263,4 +270,8 @@ function formFunctional(book) {
     book[e.target.name] = e.target.value;
     console.log(book);
   }
+}
+
+function clearInfo(e) {
+  rightDiv.innerHTML = '';
 }
